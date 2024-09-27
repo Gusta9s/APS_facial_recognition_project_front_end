@@ -8,6 +8,51 @@
  *  - ssdMobilenetv1: E a biblioteca responsavel por fazer a estilizacao do faceLandmark68Net e aplicar os quadrados de deteccao e etc.
  */
 
+// Função para converter uma imagem para tons de cinza e gerar uma matriz de intensidades
+function getGrayscalePixelMatrixFromCanvasOffscreen(canvas) {
+    const { width, height } = canvas;
+
+    // Reduzir a resolução do canvas para economizar processamento
+    const targetWidth = Math.floor(width * 0.5);  // Reduz pela metade a largura
+    const targetHeight = Math.floor(height * 0.5);  // Reduz pela metade a altura
+
+    // Criar um canvas offscreen menor para a conversão
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = targetWidth;
+    offscreenCanvas.height = targetHeight;
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    // Desenhar a imagem da câmera no canvas offscreen
+    offscreenCtx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
+
+    // Obter os dados de imagem do canvas offscreen
+    const imageData = offscreenCtx.getImageData(0, 0, targetWidth, targetHeight);
+    const data = imageData.data;
+
+    // Inicializar a matriz de intensidades dos tons de cinza
+    const grayMatrix = [];
+
+    for (let y = 0; y < targetHeight; y++) {
+        const row = [];
+        for (let x = 0; x < targetWidth; x++) {
+            const index = (y * targetWidth + x) * 4;
+            const r = data[index];      // Componente Red
+            const g = data[index + 1];  // Componente Green
+            const b = data[index + 2];  // Componente Blue
+
+            // Converter para tons de cinza usando a fórmula
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            // Adicionar o valor de cinza à linha
+            row.push(gray);
+        }
+        grayMatrix.push(row);  // Adicionar a linha à matriz
+    }
+
+    return grayMatrix;
+}
+
+
 // Função para obter a matriz de pixels com valores RGB
 function getAquisicaoDaImagemEmRGB(canvas) {
     const ctx = canvas.getContext('2d');
@@ -49,6 +94,7 @@ function getAquisicaoDaImagemEmRGB(canvas) {
     return rgbMatrix;
 }
 
+
 const camera = document.getElementById('camera')
 
 const startVideo = () => {
@@ -73,6 +119,7 @@ const startVideo = () => {
     })
 }
 
+
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri('/assets/lib/models'),
     faceapi.nets.faceLandmark68Net.loadFromUri('/assets/lib/models'),
@@ -81,6 +128,7 @@ Promise.all([
     faceapi.nets.ageGenderNet.loadFromUri('/assets/lib/models'),
     faceapi.nets.ssdMobilenetv1.loadFromUri('/assets/lib/models')
 ]).then(startVideo)
+
 
 camera.addEventListener('play', async () => {
     const canvas = faceapi.createCanvasFromMedia(camera);
@@ -109,7 +157,13 @@ camera.addEventListener('play', async () => {
         
         // Após desenhar a imagem, obtemos a matriz de pixels RGB
         const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
-        console.log(rgbMatrix); // Exibe a matriz no console (ou manipule como necessário)
+
+        // Criar um canvas offscreen e converter para tons de cinza, reduzindo a resolução
+        const grayMatrix = getGrayscalePixelMatrixFromCanvasOffscreen(canvas);
+        
+        console.log(grayMatrix); // Exibe a matriz de intensidades no console
+        
+        //console.log(rgbMatrix); // Exibe a matriz no console (ou manipule como necessário)
         
     }, 100);
 });
