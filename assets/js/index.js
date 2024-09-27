@@ -8,6 +8,47 @@
  *  - ssdMobilenetv1: E a biblioteca responsavel por fazer a estilizacao do faceLandmark68Net e aplicar os quadrados de deteccao e etc.
  */
 
+// Função para obter a matriz de pixels com valores RGB
+function getAquisicaoDaImagemEmRGB(canvas) {
+    const ctx = canvas.getContext('2d');
+    const { width, height } = canvas;
+
+    // Reduzir a resolução do canvas para minimizar dados processados
+    const targetWidth = Math.floor(width * 0.5);  // Reduz pela metade a largura
+    const targetHeight = Math.floor(height * 0.5);  // Reduz pela metade a altura
+    
+    // Criar um canvas menor para diminuir o uso de bits
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = targetWidth;
+    offscreenCanvas.height = targetHeight;
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+    
+    // Desenhar a imagem da câmera em uma resolução mais baixa
+    offscreenCtx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
+    
+    const imageData = offscreenCtx.getImageData(0, 0, targetWidth, targetHeight);
+    const data = imageData.data;
+
+    // Inicializar a matriz de pixels RGB otimizada
+    const rgbMatrix = [];
+
+    for (let y = 0; y < targetHeight; y++) {
+        const row = [];
+        for (let x = 0; x < targetWidth; x++) {
+            const index = (y * targetWidth + x) * 4;
+            const r = data[index];      // Componente Red
+            const g = data[index + 1];  // Componente Green
+            const b = data[index + 2];  // Componente Blue
+
+            // Adicionar o pixel RGB à linha
+            row.push([r, g, b]);
+        }
+        rgbMatrix.push(row);  // Adicionar a linha à matriz
+    }
+
+    return rgbMatrix;
+}
+
 const camera = document.getElementById('camera')
 
 const startVideo = () => {
@@ -42,18 +83,33 @@ Promise.all([
 ]).then(startVideo)
 
 camera.addEventListener('play', async () => {
-    const canvas = faceapi.createCanvasFromMedia(camera)
+    const canvas = faceapi.createCanvasFromMedia(camera);
     const canvasSize = {
         width: camera.videoWidth,
         height: camera.videoHeight
-    }
-    faceapi.matchDimensions(canvas, canvasSize)
-    document.body.appendChild(canvas)
-    setInterval(async () => {
-        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions())
-        const resizedDetections = faceapi.resizeResults(detecoes, canvasSize)
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-        faceapi.draw.drawDetections(canvas, resizedDetections)
+    };
+    faceapi.matchDimensions(canvas, canvasSize);
+    document.body.appendChild(canvas);
 
-    }, 100)
-})
+    setInterval(async () => {
+        // Obter as detecções de faces
+        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions());
+        const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Limpar o canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Desenhar a imagem da câmera no canvas
+        ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+        
+        // Desenhar as detecções
+        faceapi.draw.drawDetections(canvas, resizedDetections);
+        
+        // Após desenhar a imagem, obtemos a matriz de pixels RGB
+        const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
+        console.log(rgbMatrix); // Exibe a matriz no console (ou manipule como necessário)
+        
+    }, 100);
+});
