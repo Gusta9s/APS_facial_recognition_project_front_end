@@ -8,15 +8,36 @@
  *  - ssdMobilenetv1: E a biblioteca responsavel por fazer a estilizacao do faceLandmark68Net e aplicar os quadrados de deteccao e etc.
  */
 
+// Função para converter a matriz de pixels RGB em uma string para salvar no arquivo .txt
+function convertRgbMatrixToString(rgbMatrix) {
+    return rgbMatrix.map(row => row.map(pixel => `(${pixel.join(',')})`).join(' ')).join('\n');
+}
+
+// Função para converter a matriz de pixels em tons de cinza em uma string para salvar no arquivo .txt
+function convertGrayMatrixToString(grayMatrix) {
+    return grayMatrix.map(row => row.join(' ')).join('\n');
+}
+
+// Função para criar e baixar o arquivo .txt
+function downloadTxtFile(content, filename) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Função para converter uma imagem para tons de cinza e gerar uma matriz de intensidades
-function getGrayscalePixelMatrixFromCanvasOffscreen(canvas) {
+function getGrayscalePixelMatrixFromCanvas(canvas) {
     const { width, height } = canvas;
 
     // Reduzir a resolução do canvas para economizar processamento
     const targetWidth = Math.floor(width * 0.5);  // Reduz pela metade a largura
     const targetHeight = Math.floor(height * 0.5);  // Reduz pela metade a altura
 
-    // Criar um canvas offscreen menor para a conversão
+    // Criar um canvas offscreen (como se fosse uma imagem desenhada maualmente pelo computador) menor para a conversão
     const offscreenCanvas = document.createElement('canvas');
     offscreenCanvas.width = targetWidth;
     offscreenCanvas.height = targetHeight;
@@ -25,35 +46,35 @@ function getGrayscalePixelMatrixFromCanvasOffscreen(canvas) {
     // Desenhar a imagem da câmera no canvas offscreen
     offscreenCtx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
 
-    // Obter os dados de imagem do canvas offscreen
+    // Obter os pixels da imagem do canvas offscreen
     const imageData = offscreenCtx.getImageData(0, 0, targetWidth, targetHeight);
     const data = imageData.data;
 
-    // Inicializar a matriz de intensidades dos tons de cinza
+    // Declaracao da matriz de intensidades dos tons de cinza
     const grayMatrix = [];
 
     for (let y = 0; y < targetHeight; y++) {
         const row = [];
         for (let x = 0; x < targetWidth; x++) {
             const index = (y * targetWidth + x) * 4;
-            const r = data[index];      // Componente Red
-            const g = data[index + 1];  // Componente Green
-            const b = data[index + 2];  // Componente Blue
+            const r = data[index];      // Componente Vermelho
+            const g = data[index + 1];  // Componente Verde
+            const b = data[index + 2];  // Componente Azul
 
             // Converter para tons de cinza usando a fórmula
             const gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
-            // Adicionar o valor de cinza à linha
+            // Adicionar o valor de cinza à linha (largura da matriz)
             row.push(gray);
         }
-        grayMatrix.push(row);  // Adicionar a linha à matriz
+        grayMatrix.push(row);  // Adicionar a linha à matriz (largura da matriz)
     }
 
     return grayMatrix;
 }
 
 
-// Função para obter a matriz de pixels com valores RGB
+// Função para obter a matriz de pixels com valores RGB (Vermelho, Verde e Azul)
 function getAquisicaoDaImagemEmRGB(canvas) {
     const ctx = canvas.getContext('2d');
     const { width, height } = canvas;
@@ -61,34 +82,34 @@ function getAquisicaoDaImagemEmRGB(canvas) {
     // Reduzir a resolução do canvas para minimizar dados processados
     const targetWidth = Math.floor(width * 0.5);  // Reduz pela metade a largura
     const targetHeight = Math.floor(height * 0.5);  // Reduz pela metade a altura
-    
-    // Criar um canvas menor para diminuir o uso de bits
+
+    // Criar um canvas menor (desenho manual) para diminuir o uso de bits
     const offscreenCanvas = document.createElement('canvas');
     offscreenCanvas.width = targetWidth;
     offscreenCanvas.height = targetHeight;
     const offscreenCtx = offscreenCanvas.getContext('2d');
-    
+
     // Desenhar a imagem da câmera em uma resolução mais baixa
     offscreenCtx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
-    
+
     const imageData = offscreenCtx.getImageData(0, 0, targetWidth, targetHeight);
     const data = imageData.data;
 
-    // Inicializar a matriz de pixels RGB otimizada
+    // Declarar a matriz de pixels RGB
     const rgbMatrix = [];
 
     for (let y = 0; y < targetHeight; y++) {
         const row = [];
         for (let x = 0; x < targetWidth; x++) {
             const index = (y * targetWidth + x) * 4;
-            const r = data[index];      // Componente Red
-            const g = data[index + 1];  // Componente Green
-            const b = data[index + 2];  // Componente Blue
+            const r = data[index];      // Componente Vermelho
+            const g = data[index + 1];  // Componente Verde
+            const b = data[index + 2];  // Componente Azul
 
-            // Adicionar o pixel RGB à linha
+            // Adicionar o pixel RGB à linha (largura da matriz)
             row.push([r, g, b]);
         }
-        rgbMatrix.push(row);  // Adicionar a linha à matriz
+        rgbMatrix.push(row);  // Adicionar a linha à matriz (largura da matriz)
     }
 
     return rgbMatrix;
@@ -119,6 +140,17 @@ const startVideo = () => {
     })
 }
 
+const leituraDasFeatures = () => {
+    const name = ['Gustavo']
+    name.map(async label => {
+        const descricao = [];
+        for(let i = 1; i < 5; i++){
+            const imagens = await faceapi.fetchImage(`/assets/lib/labels/${name}/${i}.jpg`);
+            const detecoes = await faceapi.detectSingleFace(imagens).withFaceLandmarks().withFaceDescriptor();
+            descricao.push(detecoes.descriptor)
+        }
+    })
+}
 
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri('/assets/lib/models'),
@@ -136,34 +168,54 @@ camera.addEventListener('play', async () => {
         width: camera.videoWidth,
         height: camera.videoHeight
     };
+    const labels = await leituraDasFeatures()
     faceapi.matchDimensions(canvas, canvasSize);
     document.body.appendChild(canvas);
 
     setInterval(async () => {
-        // Obter as detecções de faces
-        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions());
+        // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
+        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender();
         const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
-        
+
         const ctx = canvas.getContext('2d');
-        
+
         // Limpar o canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Desenhar a imagem da câmera no canvas
+
+        // Desenhar a imagem da câmera no canvas (processo de desenho manual da imagem, feita pela biblioteca canvas)
         ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
-        
-        // Desenhar as detecções
+
+        // Desenhar as detecções (processo de segmentacao)
         faceapi.draw.drawDetections(canvas, resizedDetections);
-        
-        // Após desenhar a imagem, obtemos a matriz de pixels RGB
+
+        // Obtem os pontos chave de registro, dos pixels do rosto (olhos, boca e queixo)
+        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+        resizedDetections.forEach(dect => {
+            const {age, gender, genderProbability} = dect;
+            new faceapi.draw.DrawTextField([
+                `${parseInt(age, 10)} anos`,
+                `${gender} (${parseInt(genderProbability * 100, 10)})`
+            ], dect.detection.box.topRight).draw(canvas)
+        })
+
+        // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
         const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
 
-        // Criar um canvas offscreen e converter para tons de cinza, reduzindo a resolução
-        const grayMatrix = getGrayscalePixelMatrixFromCanvasOffscreen(canvas);
-        
-        console.log(grayMatrix); // Exibe a matriz de intensidades no console
-        
-        //console.log(rgbMatrix); // Exibe a matriz no console (ou manipule como necessário)
-        
+        // Converter a matriz RGB para string
+        const rgbString = convertRgbMatrixToString(rgbMatrix);
+
+        // Fazer download do arquivo de texto com a matriz RGB
+        downloadTxtFile(rgbString, 'rgbMatrix.txt');
+
+        // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
+        const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
+
+        // Converter a matriz de tons de cinza para string
+        const grayString = convertGrayMatrixToString(grayMatrix);
+
+        // Fazer download do arquivo de texto com a matriz de tons de cinza
+        downloadTxtFile(grayString, 'grayMatrix.txt');
+
     }, 100);
 });
