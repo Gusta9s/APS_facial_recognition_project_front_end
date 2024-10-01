@@ -140,17 +140,23 @@ const startVideo = () => {
     })
 }
 
+// Função para processar e obter descrições
 const leituraDasFeatures = () => {
-    const name = ['Gustavo']
-    name.map(async label => {
+    const name = ['Gustavo'];
+    return Promise.all(name.map(async label => {
         const descricao = [];
-        for(let i = 1; i < 5; i++){
-            const imagens = await faceapi.fetchImage(`/assets/lib/labels/${name}/${i}.jpg`);
+        for (let i = 1; i < 5; i++) {
+            const imagens = await faceapi.fetchImage(`assets/lib/labels/${label}/${i}.jpg`);
             const detecoes = await faceapi.detectSingleFace(imagens).withFaceLandmarks().withFaceDescriptor();
-            descricao.push(detecoes.descriptor)
+            if (detecoes && detecoes.descriptor) { // Verifica se há detecções
+                descricao.push(detecoes.descriptor);
+            } else {
+                console.warn(`Detecção de face falhou para ${label} imagem ${i}`);
+            }
         }
-    })
-}
+        return new faceapi.LabeledFaceDescriptors(label, descricao);
+    }));
+};
 
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri('/assets/lib/models'),
@@ -168,14 +174,26 @@ camera.addEventListener('play', async () => {
         width: camera.videoWidth,
         height: camera.videoHeight
     };
-    const labels = await leituraDasFeatures()
+    const labels = await leituraDasFeatures();
     faceapi.matchDimensions(canvas, canvasSize);
     document.body.appendChild(canvas);
 
     setInterval(async () => {
         // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
-        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender();
+        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender().withFaceDescriptors();
+        
+        if (detecoes.length === 0) {
+            console.log("Nenhuma face detectada.");
+            return;
+        }
+        
         const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
+        const faceMatcher = new faceapi.FaceMatcher(labels, 0.8);
+
+        const resultadoDaAcuracia = resizedDetections.map(imagem => {
+            const bestMatch = faceMatcher.findBestMatch(imagem.descriptor);
+            return bestMatch;
+        });
 
         const ctx = canvas.getContext('2d');
 
@@ -192,7 +210,7 @@ camera.addEventListener('play', async () => {
         faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
 
         resizedDetections.forEach(dect => {
-            const {age, gender, genderProbability} = dect;
+            const { age, gender, genderProbability } = dect;
             new faceapi.draw.DrawTextField([
                 `${parseInt(age, 10)} anos`,
                 `${gender} (${parseInt(genderProbability * 100, 10)})`
@@ -216,6 +234,14 @@ camera.addEventListener('play', async () => {
 
         // Fazer download do arquivo de texto com a matriz de tons de cinza
         downloadTxtFile(grayString, 'grayMatrix.txt');
+
+        resultadoDaAcuracia.forEach((resultado, index) => {
+            const box = resizedDetections[index].detection.box;
+            const { label, distance } = resultado;
+            new faceapi.draw.DrawTextField([
+                `${label} (${parseInt(distance * 100, 10)})`
+            ], box.bottomRight).draw(canvas);
+        });
 
     }, 100);
 });
