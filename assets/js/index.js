@@ -8,6 +8,46 @@
  *  - ssdMobilenetv1: E a biblioteca responsavel por fazer a estilizacao do faceLandmark68Net e aplicar os quadrados de deteccao e etc.
  */
 
+// Função para determinar o nível de acesso com base no nome e acurácia
+function determinarNivelDeAcesso(label) {
+    const niveisDeAcesso = {
+        "Bruno": { nivel: 3, url: "https://sistema.exclusivo.ministro" },
+        "Gustavo": { nivel: 2, url: "https://sistema.restrito.diretor" },
+        "Mateus": { nivel: 1, url: "https://sistema.geral.permissao" },
+        "Luan": { nivel: 1, url: "https://sistema.geral.permissao" }
+    };
+
+    return niveisDeAcesso[label] || { nivel: 0, url: "https://sistema.sem.acesso" }; // Nível 0: Sem acesso
+}
+
+// Função para processar os resultados e redirecionar após 10 segundos
+function processarNivelDeAcesso(resultadoDaAcuracia) {
+    // Variáveis para armazenar o rosto com maior acurácia
+    let maiorAcuracia = 0;
+    let melhorLabel = "";
+
+    // Verifica cada resultado de acurácia e encontra o melhor
+    resultadoDaAcuracia.forEach(resultado => {
+        const { label, distance } = resultado;
+        const acuracia = 1 - distance; // Quanto menor a distância, maior a acurácia
+
+        if (acuracia > maiorAcuracia) {
+            maiorAcuracia = acuracia;
+            melhorLabel = label;
+        }
+    });
+
+    // Determina o nível de acesso baseado no melhor resultado
+    const nivelDeAcesso = determinarNivelDeAcesso(melhorLabel);
+
+    console.log(`Melhor correspondência: ${melhorLabel}, Nível de Acesso: ${nivelDeAcesso.nivel}`);
+
+    // Redirecionar após 10 segundos para a URL correspondente ao nível de acesso
+    setTimeout(() => {
+        window.location.href = nivelDeAcesso.url;
+    }, 10000); // 10 segundos
+}
+
 // Função para converter a matriz de pixels RGB em uma string para salvar no arquivo .txt
 function convertRgbMatrixToString(rgbMatrix) {
     return rgbMatrix.map(row => row.map(pixel => `(${pixel.join(',')})`).join(' ')).join('\n');
@@ -142,7 +182,7 @@ const startVideo = () => {
 
 // Função para processar e obter descrições
 const leituraDasFeatures = () => {
-    const name = ['Gustavo'];
+    const name = ['Gustavo', 'Bruno', 'Luan', 'Mateus'];
     return Promise.all(name.map(async label => {
         const descricao = [];
         for (let i = 1; i < 5; i++) {
@@ -181,12 +221,12 @@ camera.addEventListener('play', async () => {
     setInterval(async () => {
         // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
         const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender().withFaceDescriptors();
-        
+
         if (detecoes.length === 0) {
             console.log("Nenhuma face detectada.");
             return;
         }
-        
+
         const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
         const faceMatcher = new faceapi.FaceMatcher(labels, 0.8);
 
@@ -242,6 +282,9 @@ camera.addEventListener('play', async () => {
                 `${label} (${parseInt(distance * 100, 10)})`
             ], box.bottomRight).draw(canvas);
         });
+
+        // Depois de obter o resultado da acurácia:
+        processarNivelDeAcesso(resultadoDaAcuracia);
 
     }, 100);
 });
