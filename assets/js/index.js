@@ -11,13 +11,13 @@
 // Função para determinar o nível de acesso com base no nome e acurácia
 function determinarNivelDeAcesso(label) {
     const niveisDeAcesso = {
-        "Bruno": { nivel: 3, url: "https://sistema.exclusivo.ministro" },
-        "Gustavo": { nivel: 2, url: "https://sistema.restrito.diretor" },
-        "Mateus": { nivel: 1, url: "https://sistema.geral.permissao" },
-        "Luan": { nivel: 1, url: "https://sistema.geral.permissao" }
+        "Bruno": { nivel: 3, url: "http://127.0.0.1:5500/assets/pages/bruno.html" },
+        "Gustavo": { nivel: 2, url: "http://127.0.0.1:5500/assets/pages/gustavo.html" },
+        "Mateus": { nivel: 1, url: "http://127.0.0.1:5500/assets/pages/mateus.html" },
+        "Luan": { nivel: 1, url: "http://127.0.0.1:5500/assets/pages/luan.html" }
     };
 
-    return niveisDeAcesso[label] || { nivel: 0, url: "https://sistema.sem.acesso" }; // Nível 0: Sem acesso
+    return niveisDeAcesso[label] || { nivel: 0, url: "http://127.0.0.1:5500/assets/pages/sem_acesso.html" }; // Nível 0: Sem acesso
 }
 
 // Função para processar os resultados e redirecionar após 10 segundos
@@ -25,26 +25,32 @@ function processarNivelDeAcesso(resultadoDaAcuracia) {
     // Variáveis para armazenar o rosto com maior acurácia
     let maiorAcuracia = 0;
     let melhorLabel = "";
+    const threshold = 0.6; // Definimos um limite de distância (quanto menor, mais rigoroso)
 
     // Verifica cada resultado de acurácia e encontra o melhor
     resultadoDaAcuracia.forEach(resultado => {
         const { label, distance } = resultado;
         const acuracia = 1 - distance; // Quanto menor a distância, maior a acurácia
 
-        if (acuracia > maiorAcuracia) {
+        if (distance < threshold && acuracia > maiorAcuracia) {
             maiorAcuracia = acuracia;
             melhorLabel = label;
         }
     });
 
-    // Determina o nível de acesso baseado no melhor resultado
-    const nivelDeAcesso = determinarNivelDeAcesso(melhorLabel);
-
-    console.log(`Melhor correspondência: ${melhorLabel}, Nível de Acesso: ${nivelDeAcesso.nivel}`);
-
-    // Redirecionar após 10 segundos para a URL correspondente ao nível de acesso
+    // Se o rosto não for suficientemente próximo, consideramos como "indefinido"
     setTimeout(() => {
-        window.location.href = nivelDeAcesso.url;
+        if (!melhorLabel) {
+            console.log("Nenhuma correspondência encontrada. Acesso negado.");
+            window.location.href = "http://127.0.0.1:5500/assets/pages/sem_acesso.html"; // Redireciona para a página de "sem acesso"
+        } else {
+            const nivelDeAcesso = determinarNivelDeAcesso(melhorLabel);
+            console.log(`Melhor correspondência: ${melhorLabel}, Nível de Acesso: ${nivelDeAcesso.nivel}`);
+
+            // Redirecionar após 10 segundos para a URL correspondente ao nível de acesso
+
+            window.location.href = nivelDeAcesso.url;
+        }
     }, 10000); // 10 segundos
 }
 
@@ -228,7 +234,7 @@ camera.addEventListener('play', async () => {
         }
 
         const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
-        const faceMatcher = new faceapi.FaceMatcher(labels, 0.8);
+        const faceMatcher = new faceapi.FaceMatcher(labels, 0.6); // Tornar a correspondência mais rigorosa
 
         const resultadoDaAcuracia = resizedDetections.map(imagem => {
             const bestMatch = faceMatcher.findBestMatch(imagem.descriptor);
