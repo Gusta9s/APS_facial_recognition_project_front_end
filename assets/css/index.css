@@ -1,0 +1,79 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #1c1c1c;
+    font-family: Arial, sans-serif;
+}
+
+.camera-container {
+    position: relative;
+    width: 640px; /* Largura desejada para o vídeo */
+    height: 480px; /* Altura desejada para o vídeo */
+}
+
+#camera {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* O canvas não deve capturar cliques */
+}
+
+/* Canvas para as detecções faciais */
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Menu superior */
+header {
+    background-color: #333;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 18px;
+    font-family: Roboto, Arial, sans-serif;
+}
+
+nav ul li a:hover {
+    color: #ccc;
+}
+
+/* Rodapé */
+footer {
+    background-color: #333;
+    color: #f0f0f0;
+    text-align: center;
+    padding: 10px 0;
+    font-family: Roboto, Arial, sans-serif;
+}
