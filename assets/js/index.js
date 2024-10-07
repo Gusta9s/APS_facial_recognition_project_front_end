@@ -162,7 +162,7 @@ function getAquisicaoDaImagemEmRGB(canvas) {
 }
 
 
-const camera = document.getElementById('camera')
+const camera = document.getElementById('camera');
 
 const startVideo = () => {
     navigator.mediaDevices.enumerateDevices().then(devices => {
@@ -178,13 +178,13 @@ const startVideo = () => {
                             },
                             stream => camera.srcObject = stream,
                             error => console.error(error)
-                        )
+                        );
                     }
                 }
-            })
+            });
         }
-    })
-}
+    });
+};
 
 // Função para processar e obter descrições
 const leituraDasFeatures = () => {
@@ -222,7 +222,10 @@ camera.addEventListener('play', async () => {
     };
     const labels = await leituraDasFeatures();
     faceapi.matchDimensions(canvas, canvasSize);
-    document.body.appendChild(canvas);
+    
+    // Colocar o canvas sobre o vídeo (no mesmo container)
+    const container = document.querySelector('.camera-container');
+    container.appendChild(canvas);
 
     setInterval(async () => {
         // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
