@@ -272,25 +272,48 @@ camera.addEventListener('play', async () => {
                 `${gender} (${parseInt(genderProbability * 100, 10)}%)`
             ], detection.detection.box.topRight).draw(canvas);
 
-            // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
-            const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
+             // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
+             const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
 
-            // Converter a matriz RGB para string
-            const rgbString = convertRgbMatrixToString(rgbMatrix);
+             // Converter a matriz RGB para string
+             const rgbString = convertRgbMatrixToString(rgbMatrix);
+ 
+             // Fazer download do arquivo de texto com a matriz RGB
+             downloadTxtFile(rgbString, 'rgbMatrix.txt');
+ 
+             // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
+             const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
+ 
+             // Converter a matriz de tons de cinza para string
+             const grayString = convertGrayMatrixToString(grayMatrix);
+ 
+             // Fazer download do arquivo de texto com a matriz de tons de cinza
+             downloadTxtFile(grayString, 'grayMatrix.txt');
 
-            // Fazer download do arquivo de texto com a matriz RGB
-            downloadTxtFile(rgbString, 'rgbMatrix.txt');
-
-            // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
-            const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
-
-            // Converter a matriz de tons de cinza para string
-            const grayString = convertGrayMatrixToString(grayMatrix);
-
-            // Fazer download do arquivo de texto com a matriz de tons de cinza
-            downloadTxtFile(grayString, 'grayMatrix.txt');
-
+            // Converter o quadrado de detecção para tons de cinza
             const box = detection.detection.box;
+            const faceRegion = ctx.getImageData(box.x, box.y, box.width, box.height);
+            const grayFaceRegion = new ImageData(box.width, box.height);
+
+            // Aplicar a conversão para tons de cinza
+            for (let i = 0; i < faceRegion.data.length; i += 4) {
+                const r = faceRegion.data[i];
+                const g = faceRegion.data[i + 1];
+                const b = faceRegion.data[i + 2];
+
+                // Fórmula de conversão para tons de cinza
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                // Atribuir o valor de cinza a todos os canais RGB
+                grayFaceRegion.data[i] = gray;
+                grayFaceRegion.data[i + 1] = gray;
+                grayFaceRegion.data[i + 2] = gray;
+                grayFaceRegion.data[i + 3] = faceRegion.data[i + 3]; // Transparência (alfa)
+            }
+
+            // Desenhar a região da face em tons de cinza no canvas
+            ctx.putImageData(grayFaceRegion, box.x, box.y);
+
             new faceapi.draw.DrawTextField([
                 `${bestMatch.label} (${parseInt(bestMatch.distance * 100, 10)}%)`
             ], box.bottomRight).draw(canvas);
