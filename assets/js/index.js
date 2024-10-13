@@ -193,9 +193,9 @@ const leituraDasFeatures = () => {
         const descricao = [];
         for (let i = 1; i < 5; i++) {
             const imagens = await faceapi.fetchImage(`assets/lib/labels/${label}/${i}.jpg`);
-            const detecoes = await faceapi.detectSingleFace(imagens).withFaceLandmarks().withFaceDescriptor();
-            if (detecoes && detecoes.descriptor) { // Verifica se há detecções
-                descricao.push(detecoes.descriptor);
+            const detection = await faceapi.detectSingleFace(imagens).withFaceLandmarks().withFaceDescriptor();
+            if (detection && detection.descriptor) { // Verifica se há detecções
+                descricao.push(detection.descriptor);
             } else {
                 console.warn(`Detecção de face falhou para ${label} imagem ${i}`);
             }
@@ -222,78 +222,83 @@ camera.addEventListener('play', async () => {
     };
     const labels = await leituraDasFeatures();
     faceapi.matchDimensions(canvas, canvasSize);
-    
+
     // Colocar o canvas sobre o vídeo (no mesmo container)
     const container = document.querySelector('.camera-container');
     container.appendChild(canvas);
 
     setInterval(async () => {
         // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
-        const detecoes = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender().withFaceDescriptors();
+        const detection = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender().withFaceDescriptors();
 
-        if (detecoes.length === 0) {
+        if (detection.length === 0) {
             console.log("Nenhuma face detectada.");
             return;
         }
 
-        const resizedDetections = faceapi.resizeResults(detecoes, canvasSize);
+        const resizedDetections = faceapi.resizeResults(detection, canvasSize);
         const faceMatcher = new faceapi.FaceMatcher(labels, 0.6); // Tornar a correspondência mais rigorosa
 
-        const resultadoDaAcuracia = resizedDetections.map(imagem => {
-            const bestMatch = faceMatcher.findBestMatch(imagem.descriptor);
-            return bestMatch;
+        let melhorFace = null;
+        let menorDistancia = Number.POSITIVE_INFINITY;
+
+        resizedDetections.forEach(detection => {
+            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+            if (bestMatch.distance < menorDistancia) {
+                menorDistancia = bestMatch.distance;
+                melhorFace = { detection, bestMatch };
+            }
         });
 
-        const ctx = canvas.getContext('2d');
+        if (melhorFace) {
 
-        // Limpar o canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const { detection, bestMatch } = melhorFace;
 
-        // Desenhar a imagem da câmera no canvas (processo de desenho manual da imagem, feita pela biblioteca canvas)
-        ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+            const ctx = canvas.getContext('2d');
 
-        // Desenhar as detecções (processo de segmentacao)
-        faceapi.draw.drawDetections(canvas, resizedDetections);
+            // Limpar o canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Obtem os pontos chave de registro, dos pixels do rosto (olhos, boca e queixo)
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            // Desenhar a imagem da câmera no canvas (processo de desenho manual da imagem, feita pela biblioteca canvas)
+            ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
 
-        resizedDetections.forEach(dect => {
-            const { age, gender, genderProbability } = dect;
+            // Desenhar apenas a detecção mais próxima
+            faceapi.draw.drawDetections(canvas, [detection]);
+            faceapi.draw.drawFaceLandmarks(canvas, [detection]);
+
+            const { age, gender, genderProbability } = detection;
             new faceapi.draw.DrawTextField([
                 `${parseInt(age, 10)} anos`,
-                `${gender} (${parseInt(genderProbability * 100, 10)})`
-            ], dect.detection.box.topRight).draw(canvas)
-        })
+                `${gender} (${parseInt(genderProbability * 100, 10)}%)`
+            ], detection.detection.box.topRight).draw(canvas);
 
-        // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
-        const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
+            // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
+            const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
 
-        // Converter a matriz RGB para string
-        const rgbString = convertRgbMatrixToString(rgbMatrix);
+            // Converter a matriz RGB para string
+            const rgbString = convertRgbMatrixToString(rgbMatrix);
 
-        // Fazer download do arquivo de texto com a matriz RGB
-        downloadTxtFile(rgbString, 'rgbMatrix.txt');
+            // Fazer download do arquivo de texto com a matriz RGB
+            downloadTxtFile(rgbString, 'rgbMatrix.txt');
 
-        // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
-        const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
+            // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
+            const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
 
-        // Converter a matriz de tons de cinza para string
-        const grayString = convertGrayMatrixToString(grayMatrix);
+            // Converter a matriz de tons de cinza para string
+            const grayString = convertGrayMatrixToString(grayMatrix);
 
-        // Fazer download do arquivo de texto com a matriz de tons de cinza
-        downloadTxtFile(grayString, 'grayMatrix.txt');
+            // Fazer download do arquivo de texto com a matriz de tons de cinza
+            downloadTxtFile(grayString, 'grayMatrix.txt');
 
-        resultadoDaAcuracia.forEach((resultado, index) => {
-            const box = resizedDetections[index].detection.box;
-            const { label, distance } = resultado;
+            const box = detection.detection.box;
             new faceapi.draw.DrawTextField([
-                `${label} (${parseInt(distance * 100, 10)})`
+                `${bestMatch.label} (${parseInt(bestMatch.distance * 100, 10)}%)`
             ], box.bottomRight).draw(canvas);
-        });
 
-        // Depois de obter o resultado da acurácia:
-        processarNivelDeAcesso(resultadoDaAcuracia);
+            // Processar o nível de acesso apenas para a face mais próxima
+            processarNivelDeAcesso([bestMatch]);
+
+        }
 
     }, 100);
 });
