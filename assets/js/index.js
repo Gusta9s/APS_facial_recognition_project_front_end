@@ -220,6 +220,7 @@ camera.addEventListener('play', async () => {
         width: camera.videoWidth,
         height: camera.videoHeight
     };
+
     const labels = await leituraDasFeatures();
     faceapi.matchDimensions(canvas, canvasSize);
 
