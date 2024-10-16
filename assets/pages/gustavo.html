@@ -3,11 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso do Diretor</title>
+    <title>Nível 2</title>
+    <link rel="icon" href="../../imagem/terra.ico" type="image/x-icon"> <!-- Favicon -->
+    <link rel="stylesheet" href="/assets/css/index.css"> <!-- Referência ao CSS -->
 </head>
-<body>
-    <h1>Autenticação bem-sucedida!</h1>
-    <p>Bem-vindo, <strong>Gustavo</strong>!</p>
-    <p>Nível de Acesso: <strong>2</strong> - Acesso restrito aos diretores de divisões específicas.</p>
+<body class="level-2"> <!-- Classe adicionada para o nível 2 -->
+    <header>
+        <h1>Cofre de Segurança - Acesso do Diretor</h1>
+        <img src="../../imagem/cadeadoaberto.png" alt="Cadeado" class="lock-icon" style="position: absolute; top: 10px; right: 10px; width: 50px; height: auto;">
+    </header>
+
+    <nav>
+        <a href="#inicio">Início</a>
+        <a href="#gestao">Gestão de Projetos</a>
+        <a href="#relatorios">Relatórios Confidenciais</a>
+        <a href="#auditoria">Auditorias</a>
+        <a href="#configuracoes">Configurações</a>
+        <a href="#ajuda">Ajuda</a>
+    </nav>
+
+    <div class="container">
+        <div id="inicio" class="content">
+            <h1>Início</h1>
+            <p>Bem-vindo, <strong>Gustavo</strong>! Nível de Acesso: <strong>2</strong> - Acesso concedido ao Diretor do Conselho Geral de Meio Ambiente e Agronomia.</p>
+            <p>Você tem a responsabilidade de gerenciar informações críticas e tomar decisões que impactam diretamente as operações do Ministério do Meio Ambiente.</p>
+        </div>
+
+        <div id="gestao" class="content" style="display:none;">
+            <h1>Gestão de Projetos</h1>
+            <p>Visão geral dos projetos em andamento. <strong>Gestão eficaz é essencial</strong> para garantir a segurança e a conformidade das operações relacionadas ao meio ambiente.</p>
+            <p>Aqui você pode revisar o status dos projetos, aprovar novos e monitorar o progresso das iniciativas em sua divisão.</p>
+        </div>
+
+        <div id="relatorios" class="content" style="display:none;">
+            <h1>Relatórios Confidenciais</h1>
+            <p>Acesse relatórios que contêm informações sensíveis sobre as operações do Ministério. <strong>Estes documentos são vitais</strong> para a tomada de decisões.</p>
+        </div>
+
+        <div id="auditoria" class="content" style="display:none;">
+            <h1>Auditorias</h1>
+            <p>Consulte os registros de auditoria para garantir que todos os procedimentos estão sendo seguidos. <strong>Manter a integridade das informações é fundamental</strong>.</p>
+        </div>
+
+        <div id="configuracoes" class="content" style="display:none;">
+            <h1>Configurações</h1>
+            <p>Gerencie as configurações de acesso e segurança do sistema. <strong>Alterações aqui devem ser feitas com cautela</strong> e somente quando necessário.</p>
+        </div>
+
+        <div id="ajuda" class="content" style="display:none;">
+            <h1>Ajuda</h1>
+            <p>Para suporte técnico e esclarecimentos, consulte a seção de ajuda. <strong>A equipe de suporte está disponível</strong> para garantir que você tenha acesso a todas as informações necessárias.</p>
+        </div>
+    </div>
+
+    <footer class="f1">
+        <h6>&copy; 2024 - Projeto APS Reconhecimento Facial - UNIP Marques. Todos os direitos reservados.</h6>
+        <h6>Integrantes: Gustavo de Almeida Pacheco, Bruno Capovila, Luan Victoni, Mateus Ferreira</h6>
+        <h6>Diretor do Conselho Geral de Meio Ambiente e Agronomia &copy; 2024</h6>
+    </footer>
+    
+    <script>
+        const links = document.querySelectorAll('nav a');
+        const sections = document.querySelectorAll('.content');
+
+        links.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+
+                sections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
