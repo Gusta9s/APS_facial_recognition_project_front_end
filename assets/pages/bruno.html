@@ -1,13 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+<head class ="level-3 header">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso do Ministro</title>
+    <title>Nivel 3</title>
+    <link rel="icon" href="../../imagem/terra.ico" type="image/x-icon"> <!-- Ícone da Terra -->
+    <link rel="stylesheet" href="/assets/css/index.css">
 </head>
-<body>
-    <h1>Autenticação bem-sucedida!</h1>
-    <p>Bem-vindo, <strong>Bruno</strong>!</p>
-    <p>Nível de Acesso: <strong>3</strong> - Acesso exclusivo para o Ministro do Meio Ambiente.</p>
+<body class="level-3">
+    <header>
+        <h1>Cofre de Segurança - Acesso do Ministro</h1>
+        <img src="../../imagem/warning.png" alt="Ícone de Biometria" class="biometria-icon">
+    </header>
+    
+    <nav>
+        <a href="#inicio">Início</a>
+        <a href="#confidencialidade">Informações Confidenciais</a>
+        <a href="#decisoes">Decisões Estratégicas</a>
+        <a href="#auditoria">Auditorias de Segurança</a>
+        <a href="#configuracoes">Configurações de Acesso</a>
+        <a href="#ajuda">Ajuda</a>
+    </nav>
+
+    <div class="container">
+        <div id="inicio" class="content">
+            <h1>Início</h1>
+            <p>Bem-vindo, <strong>Bruno</strong>! Nível de Acesso: <strong>3</strong> - Acesso exclusivo ao Ministro do Meio Ambiente.</p>
+            <p>Você possui acesso a informações críticas e altamente confidenciais. O manuseio e a proteção destas informações são de sua total responsabilidade.</p>
+        </div>
+
+        <div id="confidencialidade" class="content" style="display:none;">
+            <h1>Informações Confidenciais</h1>
+            <p>Acesse documentos e dados que contêm informações sensíveis que podem impactar diretamente políticas e ações do Ministério. <strong>Este acesso é estritamente controlado</strong>.</p>
+        </div>
+
+        <div id="decisoes" class="content" style="display:none;">
+            <h1>Decisões Estratégicas</h1>
+            <p>Revise e aprove decisões estratégicas que afetam o futuro do meio ambiente. <strong>A sua liderança é crucial</strong> para garantir a segurança e a eficácia das políticas ambientais.</p>
+        </div>
+
+        <div id="auditoria" class="content" style="display:none;">
+            <h1>Auditorias de Segurança</h1>
+            <p>Consulte os registros de auditoria para garantir que todos os procedimentos de segurança estão sendo seguidos. <strong>Manter a integridade das informações é vital</strong>.</p>
+        </div>
+
+        <div id="configuracoes" class="content" style="display:none;">
+            <h1>Configurações de Acesso</h1>
+            <p>Gerencie as configurações de acesso e segurança do sistema. <strong>Alterações aqui devem ser feitas com cautela</strong> e apenas conforme necessário.</p>
+        </div>
+
+        <div id="ajuda" class="content" style="display:none;">
+            <h1>Ajuda</h1>
+            <p>Para suporte técnico e esclarecimento de dúvidas, consulte a seção de ajuda. <strong>A equipe de suporte está disponível</strong> para garantir que você tenha acesso a todas as informações necessárias.</p>
+        </div>
+    </div>
+
+
+    <footer class="f1">
+        <h6>&copy; 2024 - Projeto APS Reconhecimento Facial - UNIP Marques. Todos os direitos reservados.</h6>
+        <h6>Integrantes: Gustavo de Almeida Pacheco, Bruno Capovila, Luan Victoni, Mateus Ferreira</h6>
+        <h6>Ministério do Meio Ambiente &copy; 2024</h6>
+    </footer>
+
+    <script>
+        const links = document.querySelectorAll('nav a');
+        const sections = document.querySelectorAll('.content');
+
+        links.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+
+                sections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
