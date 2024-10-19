@@ -8,6 +8,137 @@
  *  - ssdMobilenetv1: E a biblioteca responsavel por fazer a estilizacao do faceLandmark68Net e aplicar os quadrados de deteccao e etc.
  */
 
+// Função para exibir detecções em tempo real e aplicar zoom com ajuste nos landmarks
+async function exibirDeteccoesTempoReal(camera, labels, canvas, canvasSize) {
+    const ctx = canvas.getContext('2d');
+
+    setInterval(async () => {
+        // Obter as detecções de faces e suas características
+        const detections = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withAgeAndGender()
+            .withFaceDescriptors();
+
+        if (detections.length === 0) {
+            console.log("Nenhuma face detectada.");
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas quando não há detecção
+            return;
+        }
+
+        const resizedDetections = faceapi.resizeResults(detections, canvasSize);
+        const faceMatcher = new faceapi.FaceMatcher(labels, 0.6); // Ajusta a precisão da correspondência
+
+        // Limpa o canvas para redesenhar a cada frame
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Loop para processar cada face detectada
+        resizedDetections.forEach(detection => {
+            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+
+            // Se a face for correspondente com um nível de confiança aceitável
+            if (bestMatch.label !== "unknown") {
+                const box = detection.detection.box;
+                const landmarks = detection.landmarks;
+
+                // Verificar se os landmarks estão definidos antes de acessá-los
+                if (landmarks && landmarks.positions) {
+                    // Ajustar a região da face detectada para um zoom aproximado
+                    const zoomFactor = 1.58; // Definir o fator de zoom (ajustável)
+                    const zoomedBox = {
+                        x: box.x - (box.width * (zoomFactor - 1)) / 2,
+                        y: box.y - (box.height * (zoomFactor - 1)) / 2,
+                        width: box.width * zoomFactor,
+                        height: box.height * zoomFactor
+                    };
+
+                    // Desenha a imagem da câmera no canvas com a aproximação aplicada
+                    ctx.drawImage(
+                        camera,
+                        zoomedBox.x, zoomedBox.y, zoomedBox.width, zoomedBox.height,
+                        0, 0, canvas.width, canvas.height
+                    );
+
+                    // Ajustar os landmarks com base no fator de zoom
+                    const zoomedLandmarks = landmarks.positions.map(position => ({
+                        x: (position.x - box.x) * zoomFactor + zoomedBox.x,
+                        y: (position.y - box.y) * zoomFactor + zoomedBox.y
+                    }));
+
+                    // Desenhar os landmarks ajustados no canvas
+                    ctx.fillStyle = 'blue';
+                    zoomedLandmarks.forEach(position => {
+                        ctx.beginPath();
+                        ctx.arc(position.x, position.y, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+
+                    // Redesenhar as boxes de detecção ajustadas ao zoom
+                    ctx.strokeStyle = '#00FF00'; // Cor verde
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(zoomedBox.x, zoomedBox.y, zoomedBox.width, zoomedBox.height);
+
+                    // Exibir idade e gênero ajustados ao zoom
+                    const { age, gender, genderProbability } = detection;
+                    new faceapi.draw.DrawTextField([
+                        `${parseInt(age, 10)} anos`,
+                        `${gender} (${parseInt(genderProbability * 100, 10)}%)`
+                    ], { x: zoomedBox.x + zoomedBox.width, y: zoomedBox.y + zoomedBox.height }).draw(canvas);
+
+                    // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
+                    const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
+
+                    // Converter a matriz RGB para string
+                    const rgbString = convertRgbMatrixToString(rgbMatrix);
+
+                    // Fazer download do arquivo de texto com a matriz RGB
+                    downloadTxtFile(rgbString, 'rgbMatrix.txt');
+
+                    // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
+                    const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
+
+                    // Converter a matriz de tons de cinza para string
+                    const grayString = convertGrayMatrixToString(grayMatrix);
+
+                    // Fazer download do arquivo de texto com a matriz de tons de cinza
+                    downloadTxtFile(grayString, 'grayMatrix.txt');
+
+                    // Converter o quadrado de detecção para tons de cinza
+                    const faceRegion = ctx.getImageData(zoomedBox.x, zoomedBox.y, zoomedBox.width, zoomedBox.height);
+                    const grayFaceRegion = new ImageData(zoomedBox.width, zoomedBox.height);
+
+                    // Aplicar a conversão para tons de cinza
+                    for (let i = 0; i < faceRegion.data.length; i += 4) {
+                        const r = faceRegion.data[i];
+                        const g = faceRegion.data[i + 1];
+                        const b = faceRegion.data[i + 2];
+
+                        // Fórmula de conversão para tons de cinza
+                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                        // Atribuir o valor de cinza a todos os canais RGB
+                        grayFaceRegion.data[i] = gray;
+                        grayFaceRegion.data[i + 1] = gray;
+                        grayFaceRegion.data[i + 2] = gray;
+                        grayFaceRegion.data[i + 3] = faceRegion.data[i + 3]; // Transparência (alfa)
+                    }
+
+                    // Desenhar a região da face em tons de cinza no canvas
+                    ctx.putImageData(grayFaceRegion, zoomedBox.x, zoomedBox.y);
+
+                    // Exibir a correspondência do rosto e a porcentagem de similaridade
+                    new faceapi.draw.DrawTextField([
+                        `${bestMatch.label} (${parseInt((1 - bestMatch.distance) * 100, 10)}%)`
+                    ], { x: zoomedBox.x, y: zoomedBox.y - 10 }).draw(canvas);
+
+                    // Processar o nível de acesso para o rosto detectado
+                    processarNivelDeAcesso([bestMatch]);
+                }
+            }
+        });
+    }, 100); // Atualiza a cada 100ms (ajustável para maior desempenho)
+}
+
+
 // Função para determinar o nível de acesso com base no nome e acurácia
 function determinarNivelDeAcesso(label) {
     const niveisDeAcesso = {
@@ -25,7 +156,7 @@ function processarNivelDeAcesso(resultadoDaAcuracia) {
     // Variáveis para armazenar o rosto com maior acurácia
     let maiorAcuracia = 0;
     let melhorLabel = "";
-    const threshold = 0.6; // Definimos um limite de distância (quanto menor, mais rigoroso)
+    const threshold = 0.5; // Definimos um limite de distância (quanto menor, mais rigoroso)
 
     // Verifica cada resultado de acurácia e encontra o melhor
     resultadoDaAcuracia.forEach(resultado => {
@@ -228,101 +359,7 @@ camera.addEventListener('play', async () => {
     const container = document.querySelector('.camera-container');
     container.appendChild(canvas);
 
-    setInterval(async () => {
-        // Obter as detecções de faces (processo de aquisicao e segumentacao para classe de objetos e indicacao das labels para biblioteca)
-        const detection = await faceapi.detectAllFaces(camera, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withAgeAndGender().withFaceDescriptors();
-
-        if (detection.length === 0) {
-            console.log("Nenhuma face detectada.");
-            return;
-        }
-
-        const resizedDetections = faceapi.resizeResults(detection, canvasSize);
-        const faceMatcher = new faceapi.FaceMatcher(labels, 0.6); // Tornar a correspondência mais rigorosa
-
-        let melhorFace = null;
-        let menorDistancia = Number.POSITIVE_INFINITY;
-
-        resizedDetections.forEach(detection => {
-            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-            if (bestMatch.distance < menorDistancia) {
-                menorDistancia = bestMatch.distance;
-                melhorFace = { detection, bestMatch };
-            }
-        });
-
-        if (melhorFace) {
-
-            const { detection, bestMatch } = melhorFace;
-
-            const ctx = canvas.getContext('2d');
-
-            // Limpar o canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Desenhar a imagem da câmera no canvas (processo de desenho manual da imagem, feita pela biblioteca canvas)
-            ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
-
-            // Desenhar apenas a detecção mais próxima
-            faceapi.draw.drawDetections(canvas, [detection]);
-            faceapi.draw.drawFaceLandmarks(canvas, [detection]);
-
-            const { age, gender, genderProbability } = detection;
-            new faceapi.draw.DrawTextField([
-                `${parseInt(age, 10)} anos`,
-                `${gender} (${parseInt(genderProbability * 100, 10)}%)`
-            ], detection.detection.box.topRight).draw(canvas);
-
-             // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
-             const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
-
-             // Converter a matriz RGB para string
-             const rgbString = convertRgbMatrixToString(rgbMatrix);
- 
-             // Fazer download do arquivo de texto com a matriz RGB
-             downloadTxtFile(rgbString, 'rgbMatrix.txt');
- 
-             // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
-             const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
- 
-             // Converter a matriz de tons de cinza para string
-             const grayString = convertGrayMatrixToString(grayMatrix);
- 
-             // Fazer download do arquivo de texto com a matriz de tons de cinza
-             downloadTxtFile(grayString, 'grayMatrix.txt');
-
-            // Converter o quadrado de detecção para tons de cinza
-            const box = detection.detection.box;
-            const faceRegion = ctx.getImageData(box.x, box.y, box.width, box.height);
-            const grayFaceRegion = new ImageData(box.width, box.height);
-
-            // Aplicar a conversão para tons de cinza
-            for (let i = 0; i < faceRegion.data.length; i += 4) {
-                const r = faceRegion.data[i];
-                const g = faceRegion.data[i + 1];
-                const b = faceRegion.data[i + 2];
-
-                // Fórmula de conversão para tons de cinza
-                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-
-                // Atribuir o valor de cinza a todos os canais RGB
-                grayFaceRegion.data[i] = gray;
-                grayFaceRegion.data[i + 1] = gray;
-                grayFaceRegion.data[i + 2] = gray;
-                grayFaceRegion.data[i + 3] = faceRegion.data[i + 3]; // Transparência (alfa)
-            }
-
-            // Desenhar a região da face em tons de cinza no canvas
-            ctx.putImageData(grayFaceRegion, box.x, box.y);
-
-            new faceapi.draw.DrawTextField([
-                `${bestMatch.label} (${parseInt(bestMatch.distance * 100, 10)}%)`
-            ], box.bottomRight).draw(canvas);
-
-            // Processar o nível de acesso apenas para a face mais próxima
-            processarNivelDeAcesso([bestMatch]);
-
-        }
-
-    }, 100);
-});
+    // Chamar a função para exibir as detecções em tempo real com zoom e outras exibições
+    exibirDeteccoesTempoReal(camera, labels, canvas, canvasSize);
+    }
+);
