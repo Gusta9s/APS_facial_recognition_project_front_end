@@ -135,7 +135,7 @@ async function exibirDeteccoesTempoReal(camera, labels, canvas, canvasSize) {
                 }
             }
         });
-    }, 100); // Atualiza a cada 100ms (ajustável para maior desempenho)
+    }, 300); // Atualiza a cada 100ms (ajustável para maior desempenho)
 }
 
 

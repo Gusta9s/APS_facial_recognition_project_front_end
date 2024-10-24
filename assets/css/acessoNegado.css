@@ -1,0 +1,82 @@
+/* Estilos gerais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #212121;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 3px solid #FF4136;
+}
+
+header h1 {
+    font-size: 2.5em;
+    color: #FF4136;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.deny-icon {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.error-code {
+    font-size: 10em;
+    font-weight: bold;
+    color: #FF4136;
+    margin-bottom: 20px;
+}
+
+.container p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    color: #CCCCCC;
+}
+
+footer {
+    background-color: #212121;
+    padding: 10px;
+    text-align: center;
+    color: #B0B0B0;
+    border-top: 1px solid #FF4136;
+}
+
+footer h6 {
+    margin: 5px 0;
+}
+
+/* Adaptação responsiva */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2em;
+    }
+
+    .error-code {
+        font-size: 6em;
+    }
+
+    .container p {
+        font-size: 1em;
+    }
+}
