@@ -85,22 +85,22 @@ async function exibirDeteccoesTempoReal(camera, labels, canvas, canvasSize) {
                     ], { x: zoomedBox.x + zoomedBox.width, y: zoomedBox.y + zoomedBox.height }).draw(canvas);
 
                     // Após desenhar a imagem, obtemos a matriz de pixels RGB (Vermelho, Verde e Azul)
-                    const rgbMatrix = getAquisicaoDaImagemEmRGB(canvas);
+                    const rgbMatriz = getAquisicaoDaImagemEmRGB(canvas);
 
                     // Converter a matriz RGB para string
-                    const rgbString = convertRgbMatrixToString(rgbMatrix);
+                    const rgbString = converteMatrizRGBParaString(rgbMatriz);
 
                     // Fazer download do arquivo de texto com a matriz RGB
-                    downloadTxtFile(rgbString, 'rgbMatrix.txt');
+                    downloadArquivoTexto(rgbString, 'rgbMatriz.txt');
 
                     // Após desenhar a imagem, obtemos a matriz de pixels em tons de cinza (processo de pre-processamento)
-                    const grayMatrix = getGrayscalePixelMatrixFromCanvas(canvas);
+                    const grayMatriz = getAquisicaoDaImagemEmTonsDeCinza(canvas);
 
                     // Converter a matriz de tons de cinza para string
-                    const grayString = convertGrayMatrixToString(grayMatrix);
+                    const grayString = converteMatrizTonsDeCinzaParaString(grayMatriz);
 
                     // Fazer download do arquivo de texto com a matriz de tons de cinza
-                    downloadTxtFile(grayString, 'grayMatrix.txt');
+                    downloadArquivoTexto(grayString, 'grayMatriz.txt');
 
                     // Converter o quadrado de detecção para tons de cinza
                     const faceRegion = ctx.getImageData(zoomedBox.x, zoomedBox.y, zoomedBox.width, zoomedBox.height);
@@ -186,17 +186,17 @@ function processarNivelDeAcesso(resultadoDaAcuracia) {
 }
 
 // Função para converter a matriz de pixels RGB em uma string para salvar no arquivo .txt
-function convertRgbMatrixToString(rgbMatrix) {
+function converteMatrizRGBParaString(rgbMatrix) {
     return rgbMatrix.map(row => row.map(pixel => `(${pixel.join(',')})`).join(' ')).join('\n');
 }
 
 // Função para converter a matriz de pixels em tons de cinza em uma string para salvar no arquivo .txt
-function convertGrayMatrixToString(grayMatrix) {
+function converteMatrizTonsDeCinzaParaString(grayMatrix) {
     return grayMatrix.map(row => row.join(' ')).join('\n');
 }
 
 // Função para criar e baixar o arquivo .txt
-function downloadTxtFile(content, filename) {
+function downloadArquivoTexto(content, filename) {
     const blob = new Blob([content], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -207,7 +207,7 @@ function downloadTxtFile(content, filename) {
 }
 
 // Função para converter uma imagem para tons de cinza e gerar uma matriz de intensidades
-function getGrayscalePixelMatrixFromCanvas(canvas) {
+function getAquisicaoDaImagemEmTonsDeCinza(canvas) {
     const { width, height } = canvas;
 
     // Reduzir a resolução do canvas para economizar processamento
