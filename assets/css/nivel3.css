@@ -1,0 +1,48 @@
+.level-3 nav a {
+    background-color: #4b0500;
+    color: white;
+    padding: 10px;
+    margin: 5px;
+    display: inline-block;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.level-3 nav a:hover {
+    background-color: #740700;
+}
+
+.level-3 header {
+    background-color: #4b0500;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+
+button {
+    background-color: #4b0500;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+button:hover {
+    background-color: #740700;
+}
+
+
+.lock-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: auto;
+    opacity: 0.8; 
+}
+
+
