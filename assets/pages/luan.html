@@ -4,55 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nível 1</title>
-    <link rel="icon" href="../../imagem/terra.ico" type="image/x-icon"> <!-- Favicon -->
-    <link rel="stylesheet" href="/assets/css/index.css"> <!-- CSS externo -->
+    <link rel="icon" href="/images/terra.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/nivel1.css">
 </head>
-<body class="level-1"> <!-- Classe adicionada para o nível 1 -->
+<body class="level-1">
     <header>
         <h1>Cofre de Segurança - Permissão Geral</h1>
-        <img src="../../imagem/cadeadoaberto.png" alt="Cadeado" class="lock-icon" style="position: absolute; top: 10px; right: 10px; width: 50px; height: auto;">
+        <img src="/images/cadeadoaberto.png" alt="Cadeado" class="lock-icon">
     </header>
 
     <nav>
         <a href="#inicio">Início</a>
-        <a href="#acessos">Meus Acessos</a>
-        <a href="#relatorios">Relatórios</a>
-        <a href="#configuracoes">Configurações</a>
-        <a href="#ajuda">Ajuda</a>
+        <a href="#diretrizes-ambientais">Diretrizes Ambientais</a>
+        <a href="#Ajuda">Ajuda</a>
     </nav>
 
     <div class="container">
         <div id="inicio" class="content">
             <h1>Início</h1>
-            <p>Bem-vindo, <strong>Luan</strong>! Nível de Acesso: <strong>1</strong> - Acesso concedido ao Acessor Exceutivo do Meio Ambiente</p>
-            <p>Você tem acesso às funcionalidades de visualização de relatórios e informações gerais. A sua segurança e privacidade são prioridades, e todas as operações realizadas são registradas.</p>
+            <p>Bem-vindo, <strong>Luan</strong>! Nível de Acesso: <strong>1</strong> - Acesso concedido a indivíduos com permissão geral.</p>
+            <p>Como usuário de Nível 1, você tem acesso às funcionalidades básicas do sistema, incluindo a visualização de relatórios e informações gerais. A sua segurança e privacidade são prioridades, e todas as operações realizadas são registradas.</p>
         </div>
 
-        <div id="acessos" class="content" style="display:none;">
-            <h1>Meus Acessos</h1>
-            <p>Aqui você pode visualizar os acessos realizados ao longo do tempo. Cada acesso é registrado com a data e hora da operação, permitindo que você tenha um histórico das suas atividades no sistema.</p>
+        <div id="Ajuda" class="content" style="display:none;">
+            <h1>Precisa de Ajuda?</h1>
+            <p>Em caso de dúvidas ou problemas, entre em contato com o nosso suporte <br> <strong>Email:</strong> gustavo.pacheco4@aluno.unip.br <br> <strong>telefone:</strong> (11) 4002-8922 </p>
         </div>
 
-        <div id="relatorios" class="content" style="display:none;">
-            <h1>Relatórios</h1>
-            <p>Nesta seção, você pode acessar relatórios básicos que incluem informações sobre suas atividades e acesso ao sistema. Relatórios mais detalhados estão disponíveis para níveis superiores de acesso.</p>
-        </div>
-
-        <div id="configuracoes" class="content" style="display:none;">
-            <h1>Configurações</h1>
-            <p>Você pode alterar suas preferências de notificação e atualizar sua senha nesta seção. É importante manter seus dados sempre atualizados para garantir a segurança da sua conta.</p>
-        </div>
-
-        <div id="ajuda" class="content" style="display:none;">
-            <h1>Ajuda</h1>
-            <p>Se você precisar de assistência, consulte nossa seção de ajuda. Você encontrará FAQs, tutoriais e informações de contato para suporte técnico.</p>
+        <div id="diretrizes-ambientais" class="content" style="display:none;">
+            <h1>Diretrizes Ambientais Básicas</h1>
+            <p>Estas diretrizes promovem práticas responsáveis para reduzir o impacto ambiental e preservar a sustentabilidade:</p>
+            <ul>
+                <li><strong>Uso Responsável de Produtos Químicos:</strong> Utilize produtos nas doses recomendadas pelo fabricante, evitando excessos. Aplique sob condições climáticas adequadas para minimizar deriva e contaminação.</li>
+                <li><strong>Preservação de Áreas Naturais:</strong> Respeite zonas de proteção ambiental, especialmente próximas a corpos d'água, e evite o uso de químicos em áreas de vegetação nativa para proteger a biodiversidade.</li>
+                <li><strong>Armazenamento e Transporte Seguros:</strong> Guarde produtos em locais protegidos contra umidade e luz solar, evitando vazamentos. Transporte em recipientes seguros e identificados.</li>
+                <li><strong>Descarte Consciente:</strong> Realize o descarte de embalagens e resíduos de maneira segura em locais apropriados, evitando contaminações ambientais.</li>
+            </ul>
         </div>
     </div>
 
     <footer class="f1">
         <h6>&copy; 2024 - Projeto APS Reconhecimento Facial - UNIP Marques. Todos os direitos reservados.</h6>
         <h6>Integrantes: Gustavo de Almeida Pacheco, Bruno Capovila, Luan Victoni, Mateus Ferreira</h6>
-        <h6>Acessor Exceutivo do Meio Ambiente &copy; 2024</h6>
     </footer>
 
     <script>
@@ -65,11 +59,7 @@
                 const targetId = link.getAttribute('href').substring(1);
 
                 sections.forEach(section => {
-                    if (section.id === targetId) {
-                        section.style.display = 'block';
-                    } else {
-                        section.style.display = 'none';
-                    }
+                    section.style.display = (section.id === targetId) ? 'block' : 'none';
                 });
             });
         });

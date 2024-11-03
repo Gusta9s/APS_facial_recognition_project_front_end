@@ -4,29 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nível 2</title>
-    <link rel="icon" href="../../imagem/terra.ico" type="image/x-icon"> <!-- Favicon -->
-    <link rel="stylesheet" href="/assets/css/index.css"> <!-- Referência ao CSS -->
+    <link rel="icon" href="/images/terra.ico" type="image/x-icon"> <!-- Favicon -->
+    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/nivel2.css"> <!-- Referência ao CSS -->
 </head>
 <body class="level-2"> <!-- Classe adicionada para o nível 2 -->
     <header>
         <h1>Cofre de Segurança - Acesso do Diretor</h1>
-        <img src="../../imagem/cadeadoaberto.png" alt="Cadeado" class="lock-icon" style="position: absolute; top: 10px; right: 10px; width: 50px; height: auto;">
+        <img src="/images/cadeadoaberto.png" alt="Cadeado" class="lock-icon">
     </header>
 
     <nav>
         <a href="#inicio">Início</a>
-        <a href="#gestao">Gestão de Projetos</a>
+        <a href="#impactos-toxinas">Impactos</a>
         <a href="#relatorios">Relatórios Confidenciais</a>
-        <a href="#auditoria">Auditorias</a>
-        <a href="#configuracoes">Configurações</a>
-        <a href="#ajuda">Ajuda</a>
+        <a href="#configuracoes">Configurações de Acesso</a>
     </nav>
 
     <div class="container">
         <div id="inicio" class="content">
             <h1>Início</h1>
-            <p>Bem-vindo, <strong>Gustavo</strong>! Nível de Acesso: <strong>2</strong> - Acesso concedido ao Diretor do Conselho Geral de Meio Ambiente e Agronomia.</p>
-            <p>Você tem a responsabilidade de gerenciar informações críticas e tomar decisões que impactam diretamente as operações do Ministério do Meio Ambiente.</p>
+            <p>Bem-vindo, <strong>Gustavo</strong>! Nível de Acesso: <strong>2</strong> - Acesso restrito aos diretores de divisões específicas.</p>
+            <p>Você tem a responsabilidade de gerenciar informações críticas e tomar decisões que impactam diretamente as operações do Ministério do Meio Ambiente. O acesso às informações sensíveis é controlado rigorosamente.</p>
         </div>
 
         <div id="gestao" class="content" style="display:none;">
@@ -37,7 +36,12 @@
 
         <div id="relatorios" class="content" style="display:none;">
             <h1>Relatórios Confidenciais</h1>
-            <p>Acesse relatórios que contêm informações sensíveis sobre as operações do Ministério. <strong>Estes documentos são vitais</strong> para a tomada de decisões.</p>
+            <h2>Decisões Estratégicas Atuais</h2>
+            <ul id="lista-decisoes">
+                <li><strong>Plano Nacional de Redução de Agrotóxicos:</strong> A revisão deste plano pode permitir a criação de incentivos fiscais para a produção orgânica.</li>
+                <li><strong>Regulamentação de Agrotóxicos:</strong> Proposta para aumentar as exigências de testes toxicológicos e ambientais.</li>
+                <li><strong>Revisão de Licenças:</strong> Avaliar a suspensão de licenças para produtos como acefato e glufosinato.</li>
+            </ul>
         </div>
 
         <div id="auditoria" class="content" style="display:none;">
@@ -45,22 +49,40 @@
             <p>Consulte os registros de auditoria para garantir que todos os procedimentos estão sendo seguidos. <strong>Manter a integridade das informações é fundamental</strong>.</p>
         </div>
 
+        <div id="impactos-toxinas" class="content" style="display:none;">
+            <h1>Impactos das Toxinas no Meio Ambiente</h1>
+            <p>O uso de toxinas pode trazer consequências significativas ao meio ambiente. Abaixo, estão listados alguns dos principais impactos:</p>
+            <ul>
+                <li>
+                    <strong>Contaminação de Águas:</strong> Toxinas utilizadas na agricultura podem infiltrar-se no solo e alcançar lençóis freáticos, contaminando rios, lagos e áreas úmidas. Essa contaminação afeta a qualidade da água e pode prejudicar a saúde de comunidades e ecossistemas aquáticos.
+                </li>
+                <li>
+                    <strong>Redução da Biodiversidade:</strong> O uso excessivo de produtos químicos pode matar espécies benéficas, como polinizadores (abelhas) e organismos do solo, essenciais para a saúde ambiental. Isso pode causar desequilíbrios ecológicos e reduzir a biodiversidade local.
+                </li>
+                <li>
+                    <strong>Persistência no Solo:</strong> Algumas toxinas permanecem no solo por longos períodos, dificultando o crescimento saudável das plantas e reduzindo a fertilidade natural do solo. Isso pode levar à degradação do solo ao longo do tempo.
+                </li>
+                <li>
+                    <strong>Bioacumulação e Bioconcentração:</strong> Certas toxinas podem se acumular em organismos ao longo da cadeia alimentar, aumentando as concentrações em predadores maiores, o que afeta espécies vulneráveis e representa risco à saúde de animais e humanos.
+                </li>
+            </ul>
+        </div>
+        
         <div id="configuracoes" class="content" style="display:none;">
-            <h1>Configurações</h1>
-            <p>Gerencie as configurações de acesso e segurança do sistema. <strong>Alterações aqui devem ser feitas com cautela</strong> e somente quando necessário.</p>
+            <h1>Configurações de acesso</h1>
+            <p>Visualize os níveis de permissão.</p>
+        <ul>
+            <li><strong>Nível 1:</strong> Acesso básico - Informações públicas e relatórios.</li>
+            <li><strong>Nível 2:</strong> Acesso intermediário - Informações restritas e relatórios internos.</li>
+        </ul>
         </div>
 
-        <div id="ajuda" class="content" style="display:none;">
-            <h1>Ajuda</h1>
-            <p>Para suporte técnico e esclarecimentos, consulte a seção de ajuda. <strong>A equipe de suporte está disponível</strong> para garantir que você tenha acesso a todas as informações necessárias.</p>
-        </div>
-    </div>
+        
 
-    <footer class="f1">
-        <h6>&copy; 2024 - Projeto APS Reconhecimento Facial - UNIP Marques. Todos os direitos reservados.</h6>
-        <h6>Integrantes: Gustavo de Almeida Pacheco, Bruno Capovila, Luan Victoni, Mateus Ferreira</h6>
-        <h6>Diretor do Conselho Geral de Meio Ambiente e Agronomia &copy; 2024</h6>
-    </footer>
+        <footer class="f1">
+            <h6>&copy; 2024 - Projeto APS Reconhecimento Facial - UNIP Marques. Todos os direitos reservados.</h6>
+            <h6>Integrantes: Gustavo de Almeida Pacheco, Bruno Capovila, Luan Victoni, Mateus Ferreira</h6>
+        </footer>
     
     <script>
         const links = document.querySelectorAll('nav a');
